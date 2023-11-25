@@ -8,6 +8,11 @@ from constants import STOP_WORDS
 #  size , will implement it later
 
 def convertToWords(content):
+    """
+    this function will take a string of large content as input
+    and return list of lowercase words (it will exclude stop words)
+    """
+
     # removing puntuation from the content string
     words = ''.join(char for char in content if char not in string.punctuation)
     # converting to lowerCase before spliting the content to the list of words
@@ -17,6 +22,11 @@ def convertToWords(content):
     return words
 
 def listOfWordsHits(words, docID):
+    """
+    INPUT: list of words and docID,
+    it will map each word with its freq & docID and return
+    return list of Objects containing word: freq and docID: docID
+    """
     # this function will take simplified list of content (words), and docID
     # and will make listWords that contains objects of each word
     # with meta info of each word
@@ -48,6 +58,10 @@ def listOfWordsHits(words, docID):
 
 
 def createForwardIndex(docsList):
+    """
+    INPUT: I will take full list of converted json objs from jsonFile (e.g, news369),
+    then it will return a forwardIndex
+    """
     forwardIndex = []
     for doc in docsList:
         docObj = {}
@@ -67,6 +81,16 @@ def createForwardIndex(docsList):
     
 
     return forwardIndex
+
+def writeForwardIndexToFile(forwardIndex):
+    """
+    INPUT: it will take forwardIndex,
+    and write it to a file after converting it to json obj
+    """
+    file_path = "./forward_index/output2.json"
+    # Write the list to a JSON file
+    with open(file_path, 'w') as json_file:
+        json.dump(forwardIndex, json_file, indent=2)
 
 
 
@@ -102,14 +126,12 @@ with open('./nela-gt-2022/newsdata/369news.json', 'r') as file:
     #     {........}, 
     # ]
             
+    writeForwardIndexToFile(forwardIndex)
 
             
 
 # print(docsList)
 
-file_path = "./forward_index/output2.json"
-# Write the list to a JSON file
-with open(file_path, 'w') as json_file:
-    json.dump(forwardIndex, json_file, indent=2) 
+
 
 # print(forwardIndex)

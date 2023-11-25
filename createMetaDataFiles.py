@@ -5,7 +5,13 @@ from pathlib import Path
 # so that all words can be mapped to the respective hashfile with its metadata, that can
 # be used in the invertedIndex , for search purpose
 
+
+
+# its somehow similar to the hashing function
+# as this name will be used, in invertedIndex, when wordSearch is performed
+# related metaData docs will be opened and fetch metaData of specific words from there using there docID's
 def defineMetaFileName(word):
+
     # here its checking if the word first char is alpha numberic then it will name metaDataFIle name as its first char
     # but if first char is not alpha numberic then it will iterate until it finds the alphanum but if its still
     # not found then it will name it as dump.json "in case of ',' or '.' etc 
