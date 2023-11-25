@@ -98,4 +98,10 @@ with open('./nela-gt-2022/newsdata/369news.json', 'r') as file:
             
 
 # print(docsList)
-print(forwardIndex)
+
+file_path = "./forward_index/output.json"
+# Write the list to a JSON file
+with open(file_path, 'w') as json_file:
+    json.dump(forwardIndex, json_file, indent=2) 
+
+# print(forwardIndex)
