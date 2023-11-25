@@ -1,6 +1,8 @@
 import json
 import string
 
+from constants import STOP_WORDS
+
 # TODOS
 #  i think i should minimize docIDs by generating my own, so that it will decrease the
 #  size , will implement it later
@@ -10,6 +12,8 @@ def convertToWords(content):
     words = ''.join(char for char in content if char not in string.punctuation)
     # converting to lowerCase before spliting the content to the list of words
     words = content.lower().split(' ')
+    words = [word for word in words if word not in STOP_WORDS]
+    
     return words
 
 def listOfWordsHits(words, docID):
@@ -47,6 +51,7 @@ def createForwardIndex(docsList):
     forwardIndex = []
     for doc in docsList:
         docObj = {}
+        metaDataObj = {}
         for key in doc:
             if(key == 'content'):
                 # docObj[key] = doc[key]
@@ -55,9 +60,11 @@ def createForwardIndex(docsList):
 
                 docObj['words'] = listOfWordsHits(words, doc['id'])
             else:
-                docObj[key] = doc[key]
+                metaDataObj[key] = doc[key]
+            docObj["metaData"] = metaDataObj
+
+        forwardIndex.append(docObj)
     
-    forwardIndex.append(docObj)
 
     return forwardIndex
 
@@ -99,7 +106,7 @@ with open('./nela-gt-2022/newsdata/369news.json', 'r') as file:
 
 # print(docsList)
 
-file_path = "./forward_index/output.json"
+file_path = "./forward_index/output2.json"
 # Write the list to a JSON file
 with open(file_path, 'w') as json_file:
     json.dump(forwardIndex, json_file, indent=2) 

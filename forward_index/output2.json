@@ -1,9 +1,16 @@
 [
   {
-    "id": "369news--2022-01-23--Lucifer & The FALLEN ~ From DARKNESS to LIGHT",
-    "date": "2022-01-23",
-    "source": "369news",
-    "title": "Lucifer & The FALLEN ~ From DARKNESS to LIGHT",
+    "metaData": {
+      "id": "369news--2022-01-23--Lucifer & The FALLEN ~ From DARKNESS to LIGHT",
+      "date": "2022-01-23",
+      "source": "369news",
+      "title": "Lucifer & The FALLEN ~ From DARKNESS to LIGHT",
+      "author": "Gary Lite",
+      "url": "https://369news.net/2022/01/23/lucifer-the-fallen-from-darkness-to-light/",
+      "published": "Sun, 23 Jan 2022 15:03:25 +0000",
+      "published_utc": 1642968205,
+      "collection_utc": 1642978815
+    },
     "words": [
       {
         "hollywood": 1,
@@ -1881,18 +1888,20 @@
         "guy": 1,
         "docID": "369news--2022-01-23--Lucifer & The FALLEN ~ From DARKNESS to LIGHT"
       }
-    ],
-    "author": "Gary Lite",
-    "url": "https://369news.net/2022/01/23/lucifer-the-fallen-from-darkness-to-light/",
-    "published": "Sun, 23 Jan 2022 15:03:25 +0000",
-    "published_utc": 1642968205,
-    "collection_utc": 1642978815
+    ]
   },
   {
-    "id": "369news--2022-08-30--Humanity\u2019s Transition through the Wheel of Time",
-    "date": "2022-08-30",
-    "source": "369news",
-    "title": "Humanity\u2019s Transition through the Wheel of Time",
+    "metaData": {
+      "id": "369news--2022-08-30--Humanity\u2019s Transition through the Wheel of Time",
+      "date": "2022-08-30",
+      "source": "369news",
+      "title": "Humanity\u2019s Transition through the Wheel of Time",
+      "author": "Gary Lite",
+      "url": "https://369news.net/2022/08/30/humanitys-transition-through-the-wheel-of-time/",
+      "published": "Tue, 30 Aug 2022 23:57:08 +0000",
+      "published_utc": 1661918228,
+      "collection_utc": 1661940019
+    },
     "words": [
       {
         "astrology": 8,
@@ -3606,18 +3615,20 @@
         ".": 1,
         "docID": "369news--2022-08-30--Humanity\u2019s Transition through the Wheel of Time"
       }
-    ],
-    "author": "Gary Lite",
-    "url": "https://369news.net/2022/08/30/humanitys-transition-through-the-wheel-of-time/",
-    "published": "Tue, 30 Aug 2022 23:57:08 +0000",
-    "published_utc": 1661918228,
-    "collection_utc": 1661940019
+    ]
   },
   {
-    "id": "369news--2022-10-20--Resonance Frequency Cancer Therapy Machine by Dr. Royal Raymond Rife",
-    "date": "2022-10-20",
-    "source": "369news",
-    "title": "Resonance Frequency Cancer Therapy Machine by Dr. Royal Raymond Rife",
+    "metaData": {
+      "id": "369news--2022-10-20--Resonance Frequency Cancer Therapy Machine by Dr. Royal Raymond Rife",
+      "date": "2022-10-20",
+      "source": "369news",
+      "title": "Resonance Frequency Cancer Therapy Machine by Dr. Royal Raymond Rife",
+      "author": "Gary Lite",
+      "url": "https://369news.net/2022/10/20/resonance-frequency-cancer-therapy-machine-by-dr-royal-raymond-rife/",
+      "published": "Thu, 20 Oct 2022 17:16:12 +0000",
+      "published_utc": 1666300572,
+      "collection_utc": 1666303219
+    },
     "words": [
       {
         "we": 2,
@@ -4447,11 +4458,6 @@
         ".": 1,
         "docID": "369news--2022-10-20--Resonance Frequency Cancer Therapy Machine by Dr. Royal Raymond Rife"
       }
-    ],
-    "author": "Gary Lite",
-    "url": "https://369news.net/2022/10/20/resonance-frequency-cancer-therapy-machine-by-dr-royal-raymond-rife/",
-    "published": "Thu, 20 Oct 2022 17:16:12 +0000",
-    "published_utc": 1666300572,
-    "collection_utc": 1666303219
+    ]
   }
 ]
