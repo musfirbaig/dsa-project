@@ -5,6 +5,51 @@ from pathlib import Path
 # so that all words can be mapped to the respective hashfile with its metadata, that can
 # be used in the invertedIndex , for search purpose
 
+def defineMetaFileName(word):
+    # here its checking if the word first char is alpha numberic then it will name metaDataFIle name as its first char
+    # but if first char is not alpha numberic then it will iterate until it finds the alphanum but if its still
+    # not found then it will name it as dump.json "in case of ',' or '.' etc 
+
+    metaFileName = ''
+    for char in word:
+        if char.isalnum():
+            metaFileName = char
+            break
+    if metaFileName == '':
+        metaFileName = 'dump'
+    
+
+    metaFileName = metaFileName + '.json'
+
+    return metaFileName
+
+
+def writeMetaObjToMetaFile(metaObjOfWord, metaFilePath):
+
+    # i am just checking if the metadata for the word already exists in the following metaDataFile
+    # if it exists it will not write metaInformation again and again
+    # Note : I think its processing intensive, because its reading whole file to check if metaData exists by comparing id's
+    # before writing metaData (in this way only unqiue metadata for that file is written) but break statement somehow save some processing
+    # ToDo: To somehow reduce processing, but its (one time as its not effect the search result speed)
+
+    isMetaDataExists = False
+    if metaFilePath.exists():
+        with open(metaFilePath, 'r') as json_file:
+            for line in json_file:
+                json_obj = json.loads(line)
+                # here its checking if MetaData already exists
+                # by comparing id's
+                if json_obj['id'] == metaObjOfWord['id']:
+                    isMetaDataExists = True
+                    break
+        
+    if not isMetaDataExists:
+        # here its writing metaData to the file
+        with open(metaFilePath, 'a') as json_file:
+            json_file.write(json.dumps(metaObjOfWord)+'\n')
+
+
+
 with open("./forward_index/output2.json", 'r') as json_file:
     processedForwardIndexDataList = json.load(json_file)
     directory_path = "./meta_files"
@@ -19,22 +64,8 @@ with open("./forward_index/output2.json", 'r') as json_file:
             word = list(word.keys())[0]
             # print(word)
 
-            
-            
-            # here its checking if the word first char is alpha numberic then it will name metaDataFIle name as its first char
-            # but if first char is not alpha numberic then it will iterate until it finds the alphanum but if its still
-            # not found then it will name it as dump.json "in case of ',' or '.' etc 
-
-            metaFileName = ''
-            for char in word:
-                if char.isalnum():
-                    metaFileName = char
-                    break
-            if metaFileName == '':
-                metaFileName = 'dump'
-            
-
-            metaFileName = metaFileName + '.json'
+            metaFileName = defineMetaFileName(word)
+           
             metaFilePath = Path(directory_path) / metaFileName
 
             # ------------------
@@ -45,9 +76,7 @@ with open("./forward_index/output2.json", 'r') as json_file:
 
             # --------------------
 
-            with open(metaFilePath, 'a') as json_file:
-
-                json_file.write(json.dumps(metaObjOfWord)+'\n')
+            writeMetaObjToMetaFile(metaObjOfWord, metaFilePath)
 
             
 
