@@ -1,0 +1,72 @@
+import json
+from pathlib import Path
+
+# this is used to read forward index files, and create hashfiles
+# so that all words can be mapped to the respective hashfile with its metadata, that can
+# be used in the invertedIndex , for search purpose
+
+with open("./forward_index/output2.json", 'r') as json_file:
+    processedForwardIndexDataList = json.load(json_file)
+    directory_path = "./meta_files"
+
+    for doc in processedForwardIndexDataList:
+        wordsList = doc['words']
+
+        for word in wordsList:
+
+            # here its extracting word from the word object e.g its like { "word": freq, "docId": docId}
+
+            word = list(word.keys())[0]
+            # print(word)
+
+            
+            
+            # here its checking if the word first char is alpha numberic then it will name metaDataFIle name as its first char
+            # but if first char is not alpha numberic then it will iterate until it finds the alphanum but if its still
+            # not found then it will name it as dump.json "in case of ',' or '.' etc 
+
+            metaFileName = ''
+            for char in word:
+                if char.isalnum():
+                    metaFileName = char
+                    break
+            if metaFileName == '':
+                metaFileName = 'dump'
+            
+
+            metaFileName = metaFileName + '.json'
+            metaFilePath = Path(directory_path) / metaFileName
+
+            # ------------------
+            metaObjOfWord = doc['metaData']
+
+            # below line is to be removed , its for testing purpose only
+            metaObjOfWord['word'] = word
+
+            # --------------------
+
+            with open(metaFilePath, 'a') as json_file:
+
+                json_file.write(json.dumps(metaObjOfWord)+'\n')
+
+            
+
+
+
+
+
+
+
+
+
+            # if metaFilePath.exists():
+            #     pass
+
+            # else:
+            #     # Append JSON objects to the file line by line
+            #     with open(metaFilePath, "a") as json_file:
+            #         pass
+            #     # Write each JSON object as a separate line
+
+            #     # json_file.write(json.dumps(json_object1) + "\n")
+            #     # json_file.write(json.dumps(json_object2) + "\n")

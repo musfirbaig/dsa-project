@@ -70,7 +70,6 @@ def createForwardIndex(docsList):
 
 
 
-
         
 
 with open('./nela-gt-2022/newsdata/369news.json', 'r') as file:
@@ -83,20 +82,22 @@ with open('./nela-gt-2022/newsdata/369news.json', 'r') as file:
     # forwardIndex will look like this:
     # forwardIndex = [
     #     {
+    #     metaData: {
     #         id: docId,
     #         title: docTitle,
     #         date: docDate,
     #         url : links,
-    #         ...,
+    #         ...,}
     #         words: [
     #             {
-    #                 word: docID,
-    #                 freq : numberOftimesOccured 
-    #              },
+    #                 word: freq,
+    #                 docID : numberOftimesOccured 
+    #              }]
+    #      },
     #             {
     #               ...
     #             }
-    #         ] 
+    # 
     #     },
     #     {........}, 
     # ]
