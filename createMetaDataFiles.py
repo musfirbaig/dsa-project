@@ -8,9 +8,6 @@ from myFunctionsModule import hashFileName
 
 
 
-
-
-
 # its somehow similar to the hashing function
 # as this name will be used, in invertedIndex, when wordSearch is performed
 # related metaData docs will be opened and fetch metaData of specific words from there using there docID's
@@ -21,6 +18,7 @@ def defineMetaFileName(word):
     # not found then it will name it as dump.json "in case of ',' or '.' etc 
 
     metaFileName = hashFileName(word)
+    
 
     metaFileName = metaFileName + '.json'
 
