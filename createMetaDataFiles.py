@@ -1,9 +1,13 @@
 import json
 from pathlib import Path
+from myFunctionsModule import hashFileName
 
 # this is used to read forward index files, and create hashfiles
 # so that all words can be mapped to the respective hashfile with its metadata, that can
 # be used in the invertedIndex , for search purpose
+
+
+
 
 
 
@@ -16,14 +20,7 @@ def defineMetaFileName(word):
     # but if first char is not alpha numberic then it will iterate until it finds the alphanum but if its still
     # not found then it will name it as dump.json "in case of ',' or '.' etc 
 
-    metaFileName = ''
-    for char in word:
-        if char.isalnum():
-            metaFileName = char
-            break
-    if metaFileName == '':
-        metaFileName = 'dump'
-    
+    metaFileName = hashFileName(word)
 
     metaFileName = metaFileName + '.json'
 
