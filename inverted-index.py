@@ -143,13 +143,16 @@ for barrelName in barrelNames:
 
 
 
+
+
+
 # with open("./inverted_index/output2.json", 'w') as json_file:
 #     json.dump(invertedIndex, json_file, indent=2)
 #     # print(invertedIndex)
 
-try:
-    with open("./inverted_index/output2.json", 'w') as json_file:
-        json.dump(invertedIndex, json_file, indent=2)
-        print("File 'output3.json' created successfully.")
-except Exception as e:
-    print(f"An error occurred: {e}")
+# try:
+#     with open("./inverted_index/output2.json", 'w') as json_file:
+#         json.dump(invertedIndex, json_file, indent=2)
+#         print("File 'output3.json' created successfully.")
+# except Exception as e:
+#     print(f"An error occurred: {e}")
