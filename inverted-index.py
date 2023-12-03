@@ -2,7 +2,7 @@ import json
 from myFunctionsModule import hashFileName
 from pathlib import Path
 
-with open('./forward_index/output2.json', 'r') as json_file:
+with open('./forward_index/output6.json', 'r') as json_file:
     forwardIndex = json.load(json_file)
     invertedIndex = {}
     directory_path = "./meta_files"
