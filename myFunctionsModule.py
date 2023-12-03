@@ -3,15 +3,15 @@
 
 # old code for hashfunction
 
-def hashFileName(word):
-    metaFileName = ''
-    for char in word:
-        if char.isalnum():
-            metaFileName = char
-            break
-    if metaFileName == '':
-        metaFileName = 'dump'
-    return metaFileName
+# def hashFileName(word):
+#     metaFileName = ''
+#     for char in word:
+#         if char.isalnum():
+#             metaFileName = char
+#             break
+#     if metaFileName == '':
+#         metaFileName = 'dump'
+#     return metaFileName
 
 
 def hashFileName(word):
