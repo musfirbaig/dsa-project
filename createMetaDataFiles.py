@@ -54,7 +54,7 @@ def writeMetaFiles(metaFiles):
 
 
 
-with open("./forward_index/output5.json", 'r') as json_file:
+with open("./forward_index/output6.json", 'r') as json_file:
     processedForwardIndexDataList = json.load(json_file)
     directory_path = "./meta_files"
 

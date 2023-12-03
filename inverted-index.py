@@ -77,7 +77,7 @@ from myFunctionsModule import hashFileName
 # write data in chuncks, but consider lesser file open and close operations
 
 
-with open("./forward_index/output5.json", "r") as forwardIndexFile:
+with open("./forward_index/output6.json", "r") as forwardIndexFile:
     forwardIndex = json.load(forwardIndexFile)
 
     invertedIndex = {}

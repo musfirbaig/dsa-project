@@ -1,63 +1,62 @@
 import json
 from myFunctionsModule import hashFileName
-from pathlib import Path
+import time
+# from pathlib import Path
 
 word = input("Enter Word to Search: ")
 word = word.lower()
+
+startTime = time.time()
 
 # although metaDataFilePath is already stored in invertedIndex file, but I am regenerating for the 
 # ease of coding , i will decide it later if i should generate metafilePath on runtime or preprocessed.
 
 directory_path = "./meta_files"
 metaFileName = hashFileName(word) + ".json"
-metaFilePath = Path(directory_path) / metaFileName
+metaFilePath = directory_path + "/" +  metaFileName
 
-with open("./inverted_index/output2.json", "r") as inverted_file:
-    invertedIndex = json.load(inverted_file)
+barrelPath = "./inverted_index/" + hashFileName(word) + ".json"
 
-    # it contains all docs references of that specific search word (list of docsIDs (object) in short)
-    referencesToDocs = invertedIndex[word]['docIDs']
-
-    # creating list of docIDs for that specific search word
-    listOfDocIds = []
-    for docIdObj in referencesToDocs:
-        listOfDocIds.append(docIdObj['docID'])
+with open(barrelPath, "r") as barrel:
+    invertedIndex = json.load(barrel)
 
 
-    with open(metaFilePath, "r") as metaDataFile:
+    if invertedIndex.get(word):
+        listOfWordInfoObjs = invertedIndex[word]
 
-        indexesWithMetaObjs = {}
+        docIDs = []
 
-        # I am iterating through each metaFile only once, so in this way number of iterations reduces to only one
-        # instead of iterating for each listOfDocIds, so the metaFile is opened for only once
+        for wordInfoObj in listOfWordInfoObjs:
+            docIDs.append(wordInfoObj["id"])
 
-        # Note: by implementing this logic, i think there is no need to sort data while storing invertedIndex based
-        # on word frequency
-        for line in metaDataFile:
-            metaDataObj = json.loads(line)
-            if metaDataObj['id'] in listOfDocIds:
-                index = listOfDocIds.index(metaDataObj['id'])
-                indexesWithMetaObjs[index] = metaDataObj
+    
         
+    
+    with open(metaFilePath, 'r') as metaFile:
+        metaObjs = json.load(metaFile)
+        # print(metaObjs)
+        # print(docIDs)
 
-        numberOfkeys = len(list(indexesWithMetaObjs.keys()))
+        retEndTime = time.time()
+        retTime = retEndTime - startTime
 
+        for docID in docIDs:
+            # if metaObjs.get(docID):
+            # print(metaObjs[docID])
 
-        print('\n====================================================================================\n')
-        for i in range(numberOfkeys):
-            
-            # printing the metaDataObjects of all the references of that specific word
-
-            # print(indexesWithMetaObjs[i])
-
-            # NOW formatting metaDataObj for proof of concept
-            
-            metaObj = indexesWithMetaObjs[i]
-            print("title: ", metaObj['title'])
-            print("Author: ",metaObj['author'])
-            print("HyperLink: ",metaObj['url'])
+            # prindocIDs===================================\n')
+            print("title: ", metaObjs[docID]['title'])
+            print("Author: ",metaObjs[docID]['author'])
+            print("HyperLink: ",metaObjs[docID]['url'])
 
             print('\n====================================================================================\n')
+            # pass
+            
+        
+        totalTime = time.time() - startTime
+        
+
+        print(len(docIDs), f" resuls, Retrieval Time: {retTime} seconds && Total Time: {totalTime} ")
 
         
         
