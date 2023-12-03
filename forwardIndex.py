@@ -21,7 +21,8 @@ def convertToWords(content):
     
     return words
 
-def listOfWordsHits(words, docID):
+# def listOfWordsHits(words, docID):
+def listOfWordsHits(words):
     """
     INPUT: list of words and docID,
     it will map each word with its freq & docID and return
@@ -31,30 +32,73 @@ def listOfWordsHits(words, docID):
     # and will make listWords that contains objects of each word
     # with meta info of each word
 
-    listWords = []
+    # listWords = []
 
-    for word in words:
-        wordObj = {}
+    wordsObject = {}
+
+    for index, word in enumerate(words):
+        # whole structure is redefining as below
+        # wordsObject = {"word" : {freq: "freq", pos: [list of positions in word list]}, "word2": ..... }
+
+        if wordsObject.get(word) is not None:
+            wordObject = wordsObject[word]
+            wordObject["freq"] += 1
+
+            # as pos is storing set of positions as its value
+            # cannot use set as json have difficulty in parsing 
+            # wordObject["pos"].add(index)
+
+            wordObject["pos"].append(index)
         
+        else:
+            
+            # if the word doesnt exist as a key , then it will create a new key in wordsObject
+            wordsObject[word] = {
+                "freq" : 1,
+                "pos" : [index]
+            }
+
+
+
+
+
+
+
+
+
+        # -----------------------------------------------------
+        # OLD CODE 
+        # wordObj = {}
+        # listOfPos = []
         
-        freq = 0
+        # freq = 0
         
-        for curWord in words:
-            if(curWord == word):
-                freq += 1
+        # for i ,curWord in enumerate(words):
+            # if(curWord == word):
+                # freq += 1
+
+                # finding positions of a word in a list of words , and push it in the list
+
+                # listOfPos.append(i)
+
                 # by removing repeating words we will increase efficieny
                 # because in this way it doesn't need to iterate over again on repeated words
-                words.remove(curWord)
+
+                # words.remove(curWord)
         
         # here I am assigning docID to each word of that doc
         # maybe it can be used later for inverted index
 
-        wordObj[word] = freq
-        wordObj['docID'] = docID
+        # wordObj[word] = freq
+        
+        # entering word with its list of positions in a article
 
-        listWords.append(wordObj)
-    
-    return listWords
+        # wordObj['pos'] = listOfPos
+        # wordObj['docID'] = docID
+
+        # listWords.append(wordObj)
+        # ----------------------------------------------------------
+    return wordsObject
 
 
 def createForwardIndex(docsList):
@@ -72,7 +116,10 @@ def createForwardIndex(docsList):
                 words = convertToWords(doc[key])
                 # docObj['words'] = words
 
-                docObj['words'] = listOfWordsHits(words, doc['id'])
+                # docObj['words'] = listOfWordsHits(words, doc['id'])
+
+                wordsObj = listOfWordsHits(words)
+                docObj['words'] = wordsObj
             else:
                 metaDataObj[key] = doc[key]
             docObj["metaData"] = metaDataObj
@@ -87,16 +134,27 @@ def writeForwardIndexToFile(forwardIndex):
     INPUT: it will take forwardIndex,
     and write it to a file after converting it to json obj
     """
-    file_path = "./forward_index/output2.json"
+    file_path = "./forward_index/output5.json"
+
+    # print(forwardIndex)
+
     # Write the list to a JSON file
+
     with open(file_path, 'w') as json_file:
-        json.dump(forwardIndex, json_file, indent=2)
+
+        # json.dump(forwardIndex, json_file, indent=2)
+
+        # json.dump(forwardIndex, json_file, indent=2)
+        json.dump(forwardIndex, json_file)
 
 
 
         
 
-with open('./nela-gt-2022/newsdata/369news.json', 'r') as file:
+# with open('./nela-gt-2022/newsdata/369news.json', 'r') as file:
+# with open('./nela-gt-2022/newsdata/weareanonymous.json', 'r') as file:
+with open('./nela-gt-2022/newsdata/mcclatchydc.json', 'r') as file:
+# with open('./nela-gt-2022/newsdata/abcnews.json', 'r') as file:
     docsList = json.load(file)
 
     forwardIndex = createForwardIndex(docsList)

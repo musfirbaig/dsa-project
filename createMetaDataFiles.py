@@ -25,59 +25,74 @@ def defineMetaFileName(word):
     return metaFileName
 
 
-def writeMetaObjToMetaFile(metaObjOfWord, metaFilePath):
+def writeMetaFiles(metaFiles):
 
-    # i am just checking if the metadata for the word already exists in the following metaDataFile
-    # if it exists it will not write metaInformation again and again
-    # Note : I think its processing intensive, because its reading whole file to check if metaData exists by comparing id's
-    # before writing metaData (in this way only unqiue metadata for that file is written) but break statement somehow save some processing
-    # ToDo: To somehow reduce processing, but its (one time as its not effect the search result speed)
+    metaFileNames = metaFiles.keys()
 
-    isMetaDataExists = False
-    if metaFilePath.exists():
-        with open(metaFilePath, 'r') as json_file:
-            for line in json_file:
-                json_obj = json.loads(line)
-                # here its checking if MetaData already exists
-                # by comparing id's
-                if json_obj['id'] == metaObjOfWord['id']:
-                    isMetaDataExists = True
-                    break
+    for metaFileName in metaFileNames:
+        metaFilePath = "./meta_files/" + metaFileName + ".json"
+
+        with open(metaFilePath, "w") as metaFile:
+            json.dump(metaFiles[metaFileName], metaFile)
+
+
+    # isMetaDataExists = False
+    # if metaFilePath.exists():
+    #     with open(metaFilePath, 'r') as json_file:
+    #         for line in json_file:
+    #             json_obj = json.loads(line)
+    #             # here its checking if MetaData already exists
+    #             # by comparing id's
+    #             if json_obj['id'] == metaObjOfWord['id']:
+    #                 isMetaDataExists = True
+    #                 break
         
-    if not isMetaDataExists:
-        # here its writing metaData to the file
-        with open(metaFilePath, 'a') as json_file:
-            json_file.write(json.dumps(metaObjOfWord)+'\n')
+    # if not isMetaDataExists:
+    #     # here its writing metaData to the file
+    #     with open(metaFilePath, 'a') as json_file:
+    #         json_file.write(json.dumps(metaObjOfWord)+'\n')
 
 
 
-with open("./forward_index/output2.json", 'r') as json_file:
+with open("./forward_index/output5.json", 'r') as json_file:
     processedForwardIndexDataList = json.load(json_file)
     directory_path = "./meta_files"
 
+    metaFiles = {}
+
+    # metaFiles structure would be {"metaFileName": {"id value" : {metaDataObj}, "id val 2": {metaDataObj} }, "metaFileName2": {}...}
+
     for doc in processedForwardIndexDataList:
-        wordsList = doc['words']
+        wordsObj = doc['words']
+        words = wordsObj.keys()
 
-        for word in wordsList:
+        docID = doc["metaData"].pop("id")
+        metaDataObj = doc["metaData"]
 
-            # here its extracting word from the word object e.g its like { "word": freq, "docId": docId}
+        for word in words:
 
-            word = list(word.keys())[0]
-            # print(word)
+            metaFileName = hashFileName(word)
 
-            metaFileName = defineMetaFileName(word)
-           
-            metaFilePath = Path(directory_path) / metaFileName
+            if metaFiles.get(metaFileName):
 
-            # ------------------
-            metaObjOfWord = doc['metaData']
+                if metaFiles[metaFileName].get(docID):
+                    continue
+                else:
+                    metaFiles[metaFileName][docID] = metaDataObj
 
-            # below line is to be removed , its for testing purpose only
-            metaObjOfWord['word'] = word
+            else:
+                metaFiles[metaFileName] = {}
 
-            # --------------------
+                # docID = doc["metaData"].pop("id")
 
-            writeMetaObjToMetaFile(metaObjOfWord, metaFilePath)
+                metaFiles[metaFileName][docID] = metaDataObj
+
+            # print(metaFiles)
+
+    
+    writeMetaFiles(metaFiles)
+
+            # writeMetaObjToMetaFile(metaObjOfWord, metaFilePath)
 
             
 
