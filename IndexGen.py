@@ -2,12 +2,19 @@ import json
 import string
 import os
 import sys
-from myFunctionsModule import hashFileName
+import time
 from constants import STOP_WORDS
 
 # TODOS
 #  i think i should minimize docIDs by generating my own, so that it will decrease the
 #  size , will implement it later
+class Hashing:
+    def HasherFunction(self, string1):
+        sum = 0
+        for x,l in enumerate(string1):
+            sum = sum + (x+1)*ord(l)
+        return (sum)%200
+    
 class ForwardIndex:
 
     def convertToWords(self, content):
@@ -61,6 +68,7 @@ class ForwardIndex:
         INPUT: I will take full list of converted json objs from jsonFile (e.g, news369),
         then it will return a forwardIndex
         """
+        start_time =  time.time()
         forwardIndex = []
         for docsList in docList:
             for doc in docsList:
@@ -80,11 +88,12 @@ class ForwardIndex:
                         metaDataObj[key] = doc[key]
                     docObj["metaData"] = metaDataObj
                 forwardIndex.append(docObj)
+        print("Execution Time (Forward): " + str(time.time()-start_time))
         return forwardIndex
     
     def documentList(self ,directoryName):
         files = os.listdir(directoryName)
-        files = [("./"+f) for f in files if os.path.isfile(directoryName+'/'+f)] #Filtering only the files
+        files = [(directoryName+"/"+f) for f in files if os.path.isfile(directoryName+'/'+f)] #Filtering only the files
         listDr = []
         for file in files:
             with open(file) as f:
@@ -110,9 +119,10 @@ class ForwardIndex:
             json.dump(forwardIndex, json_file)
 
 class InvertedIndex:
-
+    
     def generateInvertedIndex(self):
-
+        hashObj = Hashing()
+        start_time =  time.time()
         with open("Forward_Index.json", "r") as forwardIndexFile:
             forwardIndex = json.load(forwardIndexFile)
         invertedIndex = {}
@@ -122,7 +132,7 @@ class InvertedIndex:
             # articleData is  = { "metaData" : {metadata object}, "words": { "word1": {freq: "val", pos : [list of pos]}}}
             words = articleData["words"].keys()
             for word in words:
-                barrelName = hashFileName(word)
+                barrelName = hashObj.HasherFunction(word)
                 barrelWordsObj = {}
                 # wordObjInfo contains {id: val, freq: val, pos: [values]}
                 wordObjInfo = articleData["words"][word]
@@ -143,10 +153,14 @@ class InvertedIndex:
             barrelNames = invertedIndex.keys()
             # i am also dealing with numbers here like "888" is also searchable, any number is searchable if exists in docs
             # for now, but in future i will think about it
-            for barrelName in barrelNames:
-                barrelFilePath = "./Inverted_Index/" + barrelName + ".json"
-                with open(barrelFilePath, "w") as barrel:
-                    json.dump(invertedIndex[barrelName], barrel)
+
+        forwardIndex = []
+        for barrelName in barrelNames:
+            os.makedirs("Inverted_Index", exist_ok=True)
+            barrelFilePath = "Inverted_Index/" + "barrel" + str(barrelName) + ".json"
+            with open(barrelFilePath, mode="w") as barrel:
+                json.dump(invertedIndex[barrelName], barrel)
+        print("Execution Time (Inverted): " + str(time.time()-start_time))
 
 class IndexGenerator:
 
