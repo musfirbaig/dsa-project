@@ -174,6 +174,9 @@ class IndexGenerator:
 
 #  usage: python IndexGen.py <directory>
 def __main__():
+    if (len(sys.argv) != 2):
+        print("Correct Usage: \"python IndexGen.py <directory>\"")
+        sys.exit()
     directoryName = sys.argv[1]
     indexGenerator = IndexGenerator()
     indexGenerator.runGenerator(directoryName)
