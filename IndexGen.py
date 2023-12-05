@@ -11,7 +11,7 @@ class Hashing:
     def HasherFunction(self, inputString):
         sum = 0
         for index, element in enumerate(inputString):
-            sum = sum + (index+1)*ord(element)
+            sum = sum + (len(inputString)-index)*ord(element)
         return (sum)%200
     
 # class written to generate forward index 
@@ -36,7 +36,6 @@ class ForwardIndex:
         wordsObject = {}
         for index, word in enumerate(words):
             if word in wordsObject:
-                wordsObject[word]["freq"] += 1
                 wordsObject[word]["freq"] += 1
                 wordsObject[word]["pos"].append(index)
             else:
