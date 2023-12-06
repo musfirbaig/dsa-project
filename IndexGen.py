@@ -23,7 +23,7 @@ class ForwardIndex:
         OUTPUT: list of words for case insensitivity (lowercase)
         """
         words = content.lower().split(' ')
-        words = [word.encode("ascii", "ignore").decode().strip(',._+/\\!@#$?^()[]}{"').strip() for word in words if word not in STOP_WORDS and len(words)]
+        words = [word.encode("ascii", "ignore").decode().strip(',._+/\\!@#$?^()[]}{"').strip() for word in words if word not in STOP_WORDS and len(word)]
         return words
 
 
