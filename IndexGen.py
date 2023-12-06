@@ -1,10 +1,11 @@
 import json
-import string
 import os
 import sys
 import time
+
 from constants import STOP_WORDS
 
+STOP_WORDS_SET = set(STOP_WORDS)
 # this hashing function was written by me specifically for nela-gt-2022 dataset,
 # it sufficiently (uniformaly) distributes words in the search engine barrels 
 class Hashing:
@@ -23,7 +24,7 @@ class ForwardIndex:
         OUTPUT: list of words for case insensitivity (lowercase)
         """
         words = content.lower().split(' ')
-        words = [word.encode("ascii", "ignore").decode().strip(',._+/\\!@#$?^()[]}{"').strip() for word in words if word not in STOP_WORDS and len(words)]
+        words = [word.encode("ascii", "ignore").decode().strip(',._+/\\!@#$?^()[]}{"').strip() for word in words if len(words) and word not in STOP_WORDS_SET]
         return words
 
 
@@ -128,19 +129,20 @@ class InvertedIndex:
                         invertedIndex[barrelName][word] = [wordObjectInfo]
                 else:
                     invertedIndex[barrelName] = {word: [wordObjectInfo]}
-
+        print("Execution Time (Inverted Process): " + str(time.time() - startTime))
+        startTime = time.time()
         barrelNames = invertedIndex.keys()
         forwardIndex = []
+        os.makedirs("Inverted_Index", exist_ok=True)
         for barrelName in barrelNames:
-            os.makedirs("Inverted_Index", exist_ok=True)
             barrelFilePath = "Inverted_Index/" + "barrel" + str(barrelName) + ".json"
             with open(barrelFilePath, mode="w") as barrel:
                 json.dump(invertedIndex[barrelName], barrel)
-        print("Execution Time (Inverted): " + str(time.time() - startTime))
+        print("Execution Time (Inverted Writing Barrels): " + str(time.time() - startTime))
+
 
 # class demonstrating the generation of forward index as well as
 # the inverted index
-
 class IndexGenerator:
 
     def runGenerator(self, directoryName):
