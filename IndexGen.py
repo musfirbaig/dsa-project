@@ -11,8 +11,8 @@ class Hashing:
     def HasherFunction(self, inputString):
         sum = 0
         for index, element in enumerate(inputString):
-            sum = sum + (len(inputString)-index)*ord(element)
-        return (sum)%200
+            sum = sum + (len(inputString) - index)*ord(element)
+        return (sum)%500
     
 # class written to generate forward index 
 class ForwardIndex:
@@ -22,9 +22,8 @@ class ForwardIndex:
         INPUT: article content
         OUTPUT: list of words for case insensitivity (lowercase)
         """
-        words = ''.join(char for char in content if char not in string.punctuation)
         words = content.lower().split(' ')
-        words = [word for word in words if word not in STOP_WORDS]
+        words = [word.encode("ascii", "ignore").decode().strip(',._+/\\!@#$?^()[]}{"').strip() for word in words if word not in STOP_WORDS and len(words)]
         return words
 
 
