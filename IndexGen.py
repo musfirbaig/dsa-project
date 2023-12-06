@@ -2,19 +2,19 @@ import json
 import os
 import sys
 import time
-from nltk.stem import PorterStemmer
+from nltk.stem import SnowballStemmer
 from constants import STOP_WORDS
 import ujson
 
 STOP_WORDS_SET = set(STOP_WORDS)
-stemmerPort = PorterStemmer()
+stemmer = SnowballStemmer("english")
 # this hashing function was written by me specifically for nela-gt-2022 dataset,
 # it sufficiently (uniformaly) distributes words in the search engine barrels 
 class Hashing:
     def HasherFunction(self, inputString):
         sum = 0
         for index, element in enumerate(inputString):
-            sum = sum + (len(inputString) - index)*ord(element)
+            sum = sum + ((len(inputString) - index) * ord(element))
         return (sum)%500
     
 # class written to generate forward index 
@@ -26,7 +26,8 @@ class ForwardIndex:
         OUTPUT: list of words for case insensitivity (lowercase)
         """
         words = content.lower().split(' ')
-        words = [stemmerPort.stem(word).strip(',._+/\\!@#$?^()[]}{"').strip() for word in words if len(word) and word not in STOP_WORDS_SET]
+        words = [stemmer.stem(word).strip(',._+/\\!@#$?^()[]}{"') for word in words if word not in STOP_WORDS_SET]
+        words = [word for word in words if len(word) != 0]
         return words
 
 
