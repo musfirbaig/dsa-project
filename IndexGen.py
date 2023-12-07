@@ -26,7 +26,7 @@ class ForwardIndex:
         OUTPUT: list of words for case insensitivity (lowercase)
         """
         words = content.lower().split(' ')
-        words = [stemmer.stem(word).strip(',._+/\\!@#$?^()[]}{"') for word in words if word not in STOP_WORDS_SET]
+        words = [stemmer.stem(word).strip(',._+/\\!@#$?^()[]}{"').strip() for word in words if word not in STOP_WORDS_SET]
         words = [word for word in words if len(word) != 0]
         return words
 
@@ -70,7 +70,7 @@ class ForwardIndex:
                 if sys.getsizeof(forwardIndex) >= 50000:
                     self.writeForwardIndexToFile(forwardIndex)
                     forwardIndex = []
-        if(sys.getsizeof(forwardIndex)):
+        if len(forwardIndex):
             self.writeForwardIndexToFile(forwardIndex)
 
         print("Execution Time (Forward): " + str(time.time()-start_time))
