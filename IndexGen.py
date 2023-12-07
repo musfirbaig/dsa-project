@@ -67,9 +67,11 @@ class ForwardIndex:
                 for key in keysOfArticle:
                     articleObject["metaData"][key] = article[key]
                 forwardIndex.append(articleObject)
-                if sys.getsizeof(forwardIndex) >= 30000:
+                if sys.getsizeof(forwardIndex) >= 50000:
                     self.writeForwardIndexToFile(forwardIndex)
                     forwardIndex = []
+        if(sys.getsizeof(forwardIndex)):
+            self.writeForwardIndexToFile(forwardIndex)
 
         print("Execution Time (Forward): " + str(time.time()-start_time))
     
@@ -162,7 +164,7 @@ class IndexGenerator:
         iIndex.generateInvertedIndex(fIndex.getNoFiles())
 
 
-def __main__():
+def main():
     #  usage: python IndexGen.py <directory>
     if (len(sys.argv) != 2):
         print("Correct Usage: \"python IndexGen.py <directory>\"")
@@ -171,4 +173,4 @@ def __main__():
     indexGenerator = IndexGenerator()
     indexGenerator.runGenerator(directoryName)
 
-__main__()
+main()
