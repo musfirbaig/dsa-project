@@ -198,8 +198,8 @@ class IndexGenerator:
         """
         fIndex = ForwardIndex()
         iIndex = InvertedIndex()
-        # fIndex.forwardIndexGenerator(directoryName)
-        iIndex.generateInvertedIndex(8)#fIndex.getNoFiles())
+        fIndex.forwardIndexGenerator(directoryName)
+        iIndex.generateInvertedIndex(fIndex.getNoFiles())
 
 
 def main():
