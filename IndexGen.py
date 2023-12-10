@@ -132,9 +132,9 @@ class InvertedIndex:
             with open(path, mode="r") as alreadyBarrel:
                 temp = ujson.load(alreadyBarrel)
         if len(temp) == 0:
-            print("updating(): " + path)
-        else:
             print("writing(): " + path)
+        else:
+            print("updating(): " + path)
         with open(path, mode="w") as writeFile:
             for word, info in barrel.items():
                 if word in temp:
