@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Search Engine</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='index.css') }}">
+</head>
+<body>
+    <div class="main" id="main">
+        <h1 class="heading">Search Engine</h1>
+        <form method="post" action="/" id="searchForm">
+            <input type="text" name="query" id="query" placeholder="Enter Query" required>
+            <button type="submit" id="button">Search</button>
+        </form>
+    </div>
+    {% if query %}
+        <h2>Results for '{{ query }}':</h2>
+        {% if results %}
+            <ul>
+                {% for result in results %}
+                    <li>{{ result }}</li>
+                {% endfor %}
+            </ul>
+            <script>
+                //i am doing this so that after the search button is clicked the css changes like in google
+                document.querySelector('.heading').classList.add('changedheading');
+
+                document.getElementById('searchForm').classList.add('searched');
+                document.getElementById('main').classList.add('main1');
+            </script>
+            
+        {% else %}
+            <p>No results found.</p>
+        {% endif %}
+    {% endif %}
+</body>
+</html>

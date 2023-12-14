@@ -191,7 +191,7 @@ class InvertedIndex:
         os.system("cls")
         print("Execution Time (Inverted Index): " + str(time.time() - startTime))
         time.sleep(2)
-
+         
 
 # class demonstrating the generation of forward index as well as
 # the inverted index
