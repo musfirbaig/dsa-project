@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Search Engine</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='index.css') }}">
+</head>
+<body>
+    <div class="main" id="main">
+        <h1 class="heading">Search Engine</h1>
+        <form method="post" action="/" id="searchForm">
+            <input type="text" name="query" id="query" placeholder="Enter Query" required>
+            <button type="submit" id="button">Search</button>
+        </form>
+        <button onclick="location.href='/upload'" id="button1">Upload Files</button>
+    </div>
+    {% if query %}
+        <h2>Results for '{{ query }}':</h2>
+        {% if results %}
+            <ul>
+                {% for result in results %}
+                    <li><a href="{{ result }}">{{ result }}</a></li>
+                {% endfor %}
+            </ul>
+        {% else %}
+            <p id="noresult">No results found.</p>
+        {% endif %}
+        <script>
+            // Apply CSS changes after the search button is clicked
+            document.querySelector('.heading').classList.add('changedheading');
+            document.getElementById('searchForm').classList.add('searched');
+            document.getElementById('main').classList.add('main1');
+            document.getElementById('button1').classList.add('button2');
+        </script>
+    {% endif %}
+</body>
+</html>
