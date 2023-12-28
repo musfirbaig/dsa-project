@@ -7,6 +7,7 @@ from constants import STOP_WORDS
 import ujson
 import shutil
 import math
+import itertools
 STOP_WORDS_SET = set(STOP_WORDS)
 stemmer = SnowballStemmer("english")
 # this hashing function was written by me specifically for nela-gt-2022 dataset,
@@ -238,7 +239,8 @@ class InvertedIndex:
         """
 
         hashingObject = Hashing()
-        barrelName = hashingObject.HasherFunction(query)
+        stemmed_query = stemmer.stem(query)
+        barrelName = hashingObject.HasherFunction(stemmed_query)
         urls = []
 
         # Load the corresponding barrel
@@ -251,12 +253,14 @@ class InvertedIndex:
             barrel = ujson.load(barrelFile)
 
         # Check if the query word exists in the barrel
-        if query in barrel:
-            wordInfo = barrel[query]
-            sorted_word_info = sorted(wordInfo, key=lambda x: x['rank'], reverse=True)  # Sort based on rank
+        if stemmed_query in barrel:
+            wordInfo = barrel[stemmed_query]
+            # Assuming wordInfo contains the data you provided
+            flattened_word_info = [item for sublist in wordInfo for item in (sublist if isinstance(sublist, list) else [sublist])]
+            sorted_word_info = sorted(flattened_word_info, key=lambda x: x.get('rank', 0) if isinstance(x, dict) else 0, reverse=True)
 
-            doc_ids = [info['id'] for info in sorted_word_info]
-
+  # Sort based on rank
+            doc_ids = [info['id'] for info in sorted_word_info if isinstance(info, dict)]
             # Retrieve URLs corresponding to document IDs from metadata file
             metadata = []
             with open("metadata_urls.json", "r") as metadata_file:
@@ -278,29 +282,46 @@ class InvertedIndex:
         hashingObject = Hashing()
         query_words = query.split()
         doc_ids_per_word = []
+        stemmed_query_words = [stemmer.stem(word) for word in query_words]  # Stemming each query word
 
-        for word in query_words:
+        for word in stemmed_query_words:
             barrelName = hashingObject.HasherFunction(word)
             barrelPath = f"Inverted_Index/barrel{barrelName}.json"
-
             if os.path.exists(barrelPath):
                 with open(barrelPath, mode="r") as barrelFile:
                     barrel = ujson.load(barrelFile)
 
                     if word in barrel:
                         wordInfo = barrel[word]
-                        doc_ids = [info['id'] for info in wordInfo if isinstance(info, dict)]
+                        flattened_word_info = [item for sublist in wordInfo for item in (sublist if isinstance(sublist, list) else [sublist])]
+                        sorted_word_info = sorted(flattened_word_info, key=lambda x: x.get('rank', 0) if isinstance(x, dict) else 0, reverse=True)
+
+  # Sort based on rank
+                        doc_ids = [info['id'] for info in sorted_word_info if isinstance(info, dict)]
                         doc_ids_per_word.append(set(doc_ids))
-
         if doc_ids_per_word:
+            # Check for common documents for all words
             common_doc_ids = list(set.intersection(*doc_ids_per_word))
+            
+            if common_doc_ids:
+                metadata = []
+                with open("metadata_urls.json", "r") as metadata_file:
+                    metadata = json.load(metadata_file)
 
-            metadata = []
-            with open("metadata_urls.json", "r") as metadata_file:
-                metadata = json.load(metadata_file)
+                urls = [data['url'] for data in metadata if data['doc_id'] in common_doc_ids]
+                return urls
 
-            urls = [data['url'] for data in metadata if data['doc_id'] in common_doc_ids]
-            return urls
-        else:
-            print(f"No information available for the query '{query}' in the current barrels.")
-            return []
+            # Check for common documents for pairs of words for wxample if there are five words and if there are no common element between five of them then it checks wether 4 words have anything in common
+            for subset_size in range(len(query_words) - 1, 1, -1):  # Iterate over subsets
+                subsets = itertools.combinations(doc_ids_per_word, subset_size)
+                for subset in subsets:
+                    common_subset_ids = list(set.intersection(*subset))
+                    if common_subset_ids:
+                        metadata = []
+                        with open("metadata_urls.json", "r") as metadata_file:
+                            metadata = json.load(metadata_file)
+
+                        urls = [data['url'] for data in metadata if data['doc_id'] in common_subset_ids]
+
+                        return urls
+        return []

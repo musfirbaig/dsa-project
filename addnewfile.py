@@ -7,6 +7,7 @@ from constants import STOP_WORDS
 import ujson
 import shutil
 import math
+from collections import defaultdict
 STOP_WORDS_SET = set(STOP_WORDS)
 stemmer = SnowballStemmer("english")
 # this hashing function was written by me specifically for nela-gt-2022 dataset,
@@ -92,7 +93,6 @@ class AddNewFile:
                 self.existingArticleIds = {item['doc_id'] for item in metadata}
 
         additional_documents = []
-        batch_size = 1000  # Adjust the batch size as needed
 
         for document in new_data:
             article_id = document["id"]
@@ -103,7 +103,6 @@ class AddNewFile:
             else:
                 print(f"Adding article with ID {article_id} to the forward index.")
 
-                
             articleObject = {"metaData": {}}
             words = self.convertToWords(document["content"])
             wordsObject = self.dictWordToPositionAndFrequency(words)
@@ -116,81 +115,56 @@ class AddNewFile:
             additional_documents.append(articleObject)
             self.existingArticleIds.add(article_id)
 
-            if len(additional_documents) >= batch_size:
-                self.writeForwardIndexToFile(additional_documents)
-                self.updateMetadataFile(additional_documents)
-                self.updateInvertedIndexBarrels(additional_documents)
-                additional_documents = []
-
-        # Write any remaining documents
-        if additional_documents:
-            self.writeForwardIndexToFile(additional_documents)
-            self.updateMetadataFile(additional_documents)
-            self.updateInvertedIndexBarrels(additional_documents)
-
-    def writeAndIfUpdateBarrel(self, barrel: dict, barrelName: str):
-        
-        path = f"Inverted_Index/barrel{barrelName}.json"
-        temp = {}
-        
-        if os.path.exists(path):
-            with open(path, mode="r") as alreadyBarrel:
-                temp = ujson.load(alreadyBarrel)
-        if len(temp) == 0:
-            print("writing(): " + path)
-        else:
-            print("updating(): " + path)
-        with open(path, mode="w") as writeFile:
-            for word, info in barrel.items():
-                if word in temp:
-                    # Update existing information if article IDs match
-                    temp[word].append(info)
-                else:
-                    # Add completely new word information
-                    temp[word] = info
-            ujson.dump(temp, writeFile)
-        
-   
+        # Write all documents to forward index and update metadata
+        self.writeForwardIndexToFile(additional_documents)
+        self.updateMetadataFile(additional_documents)
+        self.updateInvertedIndexBarrels(additional_documents)
     def updateInvertedIndexBarrels(self, additional_documents):
-        """
-        Update the inverted index barrels with the additional documents.
-        """
         hashingObject = Hashing()
-        invertedIndex = {}
+        invertedIndex = defaultdict(lambda: defaultdict(list))
 
-        # Loop through each additional document
         for document in additional_documents:
             wordsObject = document["words"]
 
-            # Loop through words in each document
             for word, info in wordsObject.items():
                 barrelName = hashingObject.HasherFunction(word)
-
-                # Check if barrelName exists in invertedIndex
-                if barrelName not in invertedIndex:
-                    invertedIndex[barrelName] = {}
-
-                docsWithTerm = len(invertedIndex[barrelName].get(word, []))
+                docsWithTerm = len(invertedIndex[barrelName][word])
                 rank = self.calculateTFIDF(info["freq"], self.getNoFiles(), docsWithTerm)
                 info["rank"] = rank
                 info["id"] = document["metaData"]["id"]
 
-                if word in invertedIndex[barrelName]:
-                    # Update existing information if article IDs match
-                    if info not in invertedIndex[barrelName][word]:
-                        invertedIndex[barrelName][word].append(info)
-                else:
-                    # Add completely new word information
-                    invertedIndex[barrelName][word] = [info]
+                if info not in invertedIndex[barrelName][word]:
+                    invertedIndex[barrelName][word].append(info)
 
-                # Check if the size exceeds a limit (e.g., 7000)
+                # Check size and write to file if exceeds the limit
                 if sys.getsizeof(invertedIndex[barrelName]) > 7000:
-                    self.writeAndIfUpdateBarrel(invertedIndex[barrelName], barrelName)
-                    invertedIndex[barrelName] = {}
+                    self.writeBarrelToFile(invertedIndex[barrelName], barrelName)
+                    invertedIndex[barrelName] = defaultdict(list)
 
-        # Write/update the remaining barrels
+        # Write remaining barrels to files
         for barrelName, barrel in invertedIndex.items():
-            self.writeAndIfUpdateBarrel(barrel, barrelName)
+            self.writeBarrelToFile(barrel, barrelName)
+
+    def writeBarrelToFile(self, barrel, barrelName):
+        path = f"Inverted_Index/barrel{barrelName}.json"
+        temp = {}
+
+        if os.path.exists(path):
+            with open(path, mode="r") as alreadyBarrel:
+                temp = ujson.load(alreadyBarrel)
+
+        for word, info in barrel.items():
+            if word in temp:
+                temp[word].extend(info)
+            else:
+                temp[word] = info
+
+        with open(path, mode="w") as writeFile:
+            ujson.dump(temp, writeFile)
+
+        print(f"Barrel {barrelName} data written to file")
+
+
     def getNoFiles(self):
         return self.__fileCounter
     
