@@ -12,12 +12,15 @@ stemmer = SnowballStemmer("english")
 # this hashing function was written by me specifically for nela-gt-2022 dataset,
 # it sufficiently (uniformaly) distributes words in the search engine barrels 
 class Hashing:
+
     def HasherFunction(self, inputString):
         sum = 0
         for index, element in enumerate(inputString):
             sum = sum + ((len(inputString) - index) * ord(element))
         return (sum)%500
+    
 class AddNewFile:
+    
     def __init__(self):
         self.__fileCounter = 0
         self.existingArticleIds = set()
@@ -69,6 +72,7 @@ class AddNewFile:
 
         with open(metadata_filename, 'w') as metadata_file:
             ujson.dump(metadata, metadata_file, indent=4)
+
     def writeForwardIndexToFile(self, forwardIndex):
         os.makedirs("Forward_Index", exist_ok=True)
         file_path = "Forward_Index/stemmedIndex" + str(self.__fileCounter) + ".json"
@@ -81,6 +85,7 @@ class AddNewFile:
         tf = freq / totalDocs
         idf = math.log(totalDocs / (1 + docsWithTerm))
         return tf * idf
+    
     def addFileToForwardIndex(self, new_file_path):
         with open(new_file_path) as new_file:
             new_data = ujson.load(new_file)

@@ -6,17 +6,24 @@ from nltk.stem import SnowballStemmer
 from constants import STOP_WORDS
 import ujson
 import shutil
+import math
 
 STOP_WORDS_SET = set(STOP_WORDS)
 stemmer = SnowballStemmer("english")
 # this hashing function was written by me specifically for nela-gt-2022 dataset,
 # it sufficiently (uniformaly) distributes words in the search engine barrels 
 class Hashing:
+
     def HasherFunction(self, inputString):
         sum = 0
         for index, element in enumerate(inputString):
             sum = sum + ((len(inputString) - index) * ord(element))
         return (sum)%500
+    
+    def calculateTFIDF(self, freq, totalDocs, docsWithTerm):
+        tf = freq / totalDocs
+        idf = math.log(totalDocs / (1 + docsWithTerm))
+        return tf * idf
     
 # class written to generate forward index 
 class ForwardIndex:
@@ -55,7 +62,6 @@ class ForwardIndex:
         INPUT: A list of .json files in a directory
         OUTPUT: The Corresponding Forward Index
         """
-
         self.__noOfArticles = 0
         os.system("cls")
         print("generating forward index....")
@@ -155,8 +161,8 @@ class InvertedIndex:
         SIDE EFFECTS: generates a inverted index for the
         forward index present in the directory
         """
-        if os.path.exists("Inverted_Index"):
-            shutil.rmtree("Inverted_Index")
+        # if os.path.exists("Inverted_Index"):
+        #     shutil.rmtree("Inverted_Index")
         os.system("cls")
         print("generating inverted index....")
         os.makedirs("Inverted_Index", exist_ok=True)
@@ -197,17 +203,66 @@ class InvertedIndex:
 # the inverted index
 class IndexGenerator:
 
+    def __init__(self):
+        self.fIndex = ForwardIndex()
+        self.iIndex = InvertedIndex()
+
     def runGenerator(self, directoryName):
         """
         SIDE EFFECT: Creation of forward and inverted indexes
         """
-        fIndex = ForwardIndex()
-        iIndex = InvertedIndex()
         startTime = time.time()
-        fIndex.forwardIndexGenerator(directoryName)
-        iIndex.generateInvertedIndex(fIndex.getNoFiles())
+        self.fIndex.forwardIndexGenerator(directoryName)
+        self.iIndex.generateInvertedIndex(self.fIndex.getNoFiles())
         os.system("cls")
-        print(f'Processed {fIndex.noProcessedArticles()} articles in {round(time.time() - startTime, 2)} seconds')
+        print(f'Processed {self.fIndex.noProcessedArticles()} articles in {round(time.time() - startTime, 2)} seconds')
+
+    def addFile(self,  pathNewFile):
+
+        with open(pathNewFile) as new_file:
+            new_data = ujson.load(new_file)
+        
+        metadata_filename = "metadata_urls.json"
+        if os.path.exists(metadata_filename):
+            with open(metadata_filename, 'r') as metadata_file:
+                metadata = ujson.load(metadata_file)
+                self.existingArticleIds = {item['doc_id'] for item in metadata}
+
+        additional_documents = []
+        batch_size = 1000  # Adjust the batch size as needed
+
+        for document in new_data:
+            article_id = document["id"]
+
+            if article_id not in self.existingArticleIds:
+                print(f"addFile(): adding article with {article_id} to the forward index.")
+
+                
+            articleObject = {"metaData": {}}
+            words = self.convertToWords(document["content"])
+            wordsObject = self.dictWordToPositionAndFrequency(words)
+            articleObject["words"] = wordsObject
+
+            for key in document.keys():
+                if key != "content":
+                    articleObject["metaData"][key] = document[key]
+
+            additional_documents.append(articleObject)
+            self.existingArticleIds.add(article_id)
+
+            if len(additional_documents) >= batch_size:
+                self.writeForwardIndexToFile(additional_documents)
+                self.updateMetadataFile(additional_documents)
+                self.updateInvertedIndexBarrels(additional_documents)
+                additional_documents = []
+
+        # Write any remaining documents
+        if additional_documents:
+            self.writeForwardIndexToFile(additional_documents)
+            self.updateMetadataFile(additional_documents)
+            self.updateInvertedIndexBarrels(additional_documents)
+
+
 
 def main():
     #  usage: python IndexGen.py <directory>
