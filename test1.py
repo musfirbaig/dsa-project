@@ -1,7 +1,4 @@
 import ujson
 from collections import OrderedDict 
 
-with open("Inverted_Index/barrel0.json") as f:
-    onj = ujson.load(f)
-    for key in onj["cbdcs"].values():
-        print(key)
+print("https:\/\/www.activistpost.com\/2022\/01\/lockdown-rule-leads-to-people-running-out-of-food-china.html")

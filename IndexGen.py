@@ -35,12 +35,16 @@ class Hashing:
             sum = sum + ((len(inputString) - index) * ord(element))
         return (sum)%500
     
-    def rankingScore(self, freq, totalWords, sdPos):
-        return round(10000*(freq/totalWords)/sdPos, 4)
+    def rankingScore(self, freq, totalWords, posCoVar):
+        return round((10000*(freq/totalWords))/1 if posCoVar == 0 else posCoVar, 4)
     
 # class written to generate forward index 
 class ForwardIndex:
 
+    def __init__(self):
+        self.__noOfArticles = 0
+        self.__fileCounter = 0
+        
     def convertToWords(self, content):
         """
         INPUT: article content
@@ -69,7 +73,12 @@ class ForwardIndex:
                 }
         return wordsObject
 
-
+    def __getMetaData(self):
+        if os.path.exists("metaDataURL.json"):
+            with open("metaDataURL.json", "r") as f:
+                return ujson.load(f)
+        return {}
+    
     def createForwardIndex(self, documentList):
         """
         INPUT: A list of .json files in a directory
@@ -83,8 +92,13 @@ class ForwardIndex:
         forwardIndex = []
         keysOfArticle = list(documentList[0][0].keys())
         keysOfArticle.remove("content")
+        metaDataURL = self.__getMetaData()
         for jsonDocument in documentList:
             for article in jsonDocument:
+                if article["id"] not in metaDataURL:
+                    metaDataURL[article["id"]] = {"url": article["url"], "title": article["title"]}
+                else:
+                    continue
                 articleObject = {"metaData": {}}
                 words = self.convertToWords(article["content"])
                 wordsObject = self.dictWordToPositionAndFrequency(words)
@@ -99,6 +113,8 @@ class ForwardIndex:
         if len(forwardIndex):
             self.writeForwardIndexToFile(forwardIndex)
         os.system("cls")
+        with open("metaDataURL.json", "w") as f:
+            ujson.dump(metaDataURL, f)
         print("Execution Time (Forward Index): " + str(time.time()-start_time))
         time.sleep(2)
     
@@ -161,12 +177,6 @@ class InvertedIndex:
             print("updating(): " + path)
         withRank = {}
         with open(path, mode="w") as writeFile:
-            # for word, info in barrel.items():
-            #     if word in temp:
-            #         # Update existing information if article IDs match
-            #         temp.update(barrel)
-            #     else:
-            #         # Add completely new word information
             for word in barrel:
                 barrel[word] = OrderedDict(sorted(barrel[word].items(), key=operator.itemgetter(1), reverse=True))
             temp.update(barrel)
@@ -186,6 +196,8 @@ class InvertedIndex:
         hashingObject = Hashing()
         startTime = time.time()
         invertedIndex = {}
+        coVar = 0
+        mean = 0
         for indexNo in range(noFiles):
             with open("Forward_Index/stemmedIndex"+str(indexNo)+".json", "r") as forwardIndexFile:
                 forwardIndex = ujson.load(forwardIndexFile)
@@ -193,15 +205,14 @@ class InvertedIndex:
                 words = articleData["words"].keys()
                 for word in words:
                     barrelName = hashingObject.HasherFunction(word)
-                    # wordObjectInfo = articleData["words"][word]
-                    # articleId = articleData["metaData"]["id"]
-                    # wordObjectInfo["id"] = articleId
-                    
+                    coVar = numpy.std(numpy.array(articleData["words"][word]["pos"]))
+                    mean = numpy.mean(numpy.array(articleData["words"][word]["pos"]))
+                    coVar = coVar/(mean if mean != 0 else 1)
                     if barrelName in invertedIndex:
                         if word in invertedIndex[barrelName]:
-                            invertedIndex[barrelName][word][articleData["metaData"]["id"]] = hashingObject.rankingScore(articleData["words"][word]["freq"], len(articleData["words"]), numpy.std(numpy.array([1, 2, 4, 5, 6])))
+                            invertedIndex[barrelName][word][articleData["metaData"]["id"]] = hashingObject.rankingScore(articleData["words"][word]["freq"], len(articleData["words"]), coVar)
                         else:
-                            invertedIndex[barrelName][word] = {articleData["metaData"]["id"] : hashingObject.rankingScore(articleData["words"][word]["freq"], len(articleData["words"]), numpy.std(numpy.array([1, 2, 4, 5, 6])))}
+                            invertedIndex[barrelName][word] = {articleData["metaData"]["id"] : hashingObject.rankingScore(articleData["words"][word]["freq"], len(articleData["words"]), coVar)}
                     else:
                         invertedIndex[barrelName] = {}
                     if sys.getsizeof(invertedIndex[barrelName]) > 7000:
@@ -221,18 +232,29 @@ class InvertedIndex:
 # the inverted index
 class IndexGenerator:
 
+    def __init__(self):
+        self.fIndex = ForwardIndex()
+        self.iIndex = InvertedIndex()
+
     def runGenerator(self, directoryName):
         """
         SIDE EFFECT: Creation of forward and inverted indexes
         """
-        fIndex = ForwardIndex()
-        iIndex = InvertedIndex()
         startTime = time.time()
-        fIndex.forwardIndexGenerator(directoryName)
-        iIndex.generateInvertedIndex(fIndex.getNoFiles())
+        self.fIndex.forwardIndexGenerator(directoryName)
+        self.iIndex.generateInvertedIndex(self.fIndex.getNoFiles())
         os.system("cls")
-        print(f'Processed {fIndex.noProcessedArticles()} articles in {round(time.time() - startTime, 2)} seconds')
+        print(f'Processed {self.fIndex.noProcessedArticles()} articles in {round(time.time() - startTime, 2)} seconds')
+
+    def extendIndex(self, filePath):
+        self.fIndex.__fileCounter = 0
+        self.fIndex.__noOfArticles = 0
+        with open(filePath, "r") as f:
+            self.fIndex.createForwardIndex([ujson.load(f)])
+        self.iIndex.generateInvertedIndex(self.fIndex.getNoFiles())
+
     
+
 
 def main():
     #  usage: python IndexGen.py <directory>
@@ -242,5 +264,6 @@ def main():
     directoryName = sys.argv[1]
     indexGenerator = IndexGenerator()
     indexGenerator.runGenerator(directoryName)
+    
 
 main()
