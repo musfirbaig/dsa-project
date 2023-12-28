@@ -158,7 +158,8 @@ class AddNewFile:
                 temp[word].extend(info)
             else:
                 temp[word] = info
-
+                
+        os.makedirs("Inverted_Index", exist_ok=True)
         with open(path, mode="w") as writeFile:
             ujson.dump(temp, writeFile)
 

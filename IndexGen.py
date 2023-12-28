@@ -1,4 +1,3 @@
-import json
 import os
 import sys
 import time
@@ -6,17 +5,38 @@ from nltk.stem import SnowballStemmer
 from constants import STOP_WORDS
 import ujson
 import shutil
+import numpy
+import operator
+from collections import OrderedDict
+STOP_WORDS_SET = set(['i', 'me', 'my', 'myself', 'we', 'our', 'ours', 'ourselves', 'you', "you're", "you've", "you'll", "you'd",
+                       'your', 'yours', 'yourself', 'yourselves', 'he', 'him', 'his', 'himself', 'she', "she's", 'her', 'hers',
+                        'herself', 'it', "it's", 'its', 'itself', 'they', 'them', 'their', 'theirs', 'themselves', 'what',
+                        'which', 'who', 'whom', 'this', 'that', "that'll", 'these', 'those', 'am', 'is', 'are', 'was', 'were',
+                        'be', 'been', 'being', 'have', 'has', 'had', 'having', 'do', 'does', 'did', 'doing', 'a', 'an', 'the',
+                        'and', 'but', 'if', 'or', 'because', 'as', 'until', 'while', 'of', 'at', 'by', 'for', 'with', 'about',
+                        'against', 'between', 'into', 'through', 'during', 'before', 'after', 'above', 'below', 'to', 'from',
+                        'up', 'down', 'in', 'out', 'on', 'off', 'over', 'under', 'again', 'further', 'then', 'once', 'her',
+                        'there', 'when', 'where', 'why', 'how', 'all', 'any', 'both', 'each', 'few', 'more', 'most',
+                        'other', 'some', 'such', 'no', 'nor', 'not', 'only', 'own', 'same', 'so', 'than', 'too', 'very', 's',
+                        't', 'can', 'will', 'just', 'don', "don't", 'should', "should've", 'now', 'd', 'll', 'm', 'o', 're', 
+                        've', 'y', 'ain', 'aren', "aren't", 'couldn', "couldn't", 'didn', "didn't", 'doesn', "doesn't", 'hadn',
+                        "hadn't", 'hasn', "hasn't", 'haven', "haven't", 'isn', "isn't", 'ma', 'mightn', "mightn't", 'mustn',
+                        "mustn't", 'needn', "needn't", 'shan', "shan't", 'shouldn', "shouldn't", 'wasn', "wasn't", 'weren',
+                        "weren't", 'won', "won't", 'wouldn', "wouldn't"])
 
-STOP_WORDS_SET = set(STOP_WORDS)
 stemmer = SnowballStemmer("english")
 # this hashing function was written by me specifically for nela-gt-2022 dataset,
 # it sufficiently (uniformaly) distributes words in the search engine barrels 
 class Hashing:
+
     def HasherFunction(self, inputString):
         sum = 0
         for index, element in enumerate(inputString):
             sum = sum + ((len(inputString) - index) * ord(element))
         return (sum)%500
+    
+    def rankingScore(self, freq, totalWords, sdPos):
+        return round(10000*(freq/totalWords)/sdPos, 4)
     
 # class written to generate forward index 
 class ForwardIndex:
@@ -134,19 +154,22 @@ class InvertedIndex:
         
         if os.path.exists(path):
             with open(path, mode="r") as alreadyBarrel:
-                temp = ujson.load(alreadyBarrel)
+                temp = ujson.load(alreadyBarrel, object_pairs_hook=OrderedDict)
         if len(temp) == 0:
             print("writing(): " + path)
         else:
             print("updating(): " + path)
+        withRank = {}
         with open(path, mode="w") as writeFile:
-            for word, info in barrel.items():
-                if word in temp:
-                    # Update existing information if article IDs match
-                    temp[word].append(info)
-                else:
-                    # Add completely new word information
-                    temp[word] = info
+            # for word, info in barrel.items():
+            #     if word in temp:
+            #         # Update existing information if article IDs match
+            #         temp.update(barrel)
+            #     else:
+            #         # Add completely new word information
+            for word in barrel:
+                barrel[word] = OrderedDict(sorted(barrel[word].items(), key=operator.itemgetter(1), reverse=True))
+            temp.update(barrel)
             ujson.dump(temp, writeFile)
         
                 
@@ -170,16 +193,17 @@ class InvertedIndex:
                 words = articleData["words"].keys()
                 for word in words:
                     barrelName = hashingObject.HasherFunction(word)
-                    wordObjectInfo = articleData["words"][word]
-                    articleId = articleData["metaData"]["id"]
-                    wordObjectInfo["id"] = articleId
+                    # wordObjectInfo = articleData["words"][word]
+                    # articleId = articleData["metaData"]["id"]
+                    # wordObjectInfo["id"] = articleId
+                    
                     if barrelName in invertedIndex:
                         if word in invertedIndex[barrelName]:
-                            invertedIndex[barrelName][word].append(wordObjectInfo)
+                            invertedIndex[barrelName][word][articleData["metaData"]["id"]] = hashingObject.rankingScore(articleData["words"][word]["freq"], len(articleData["words"]), numpy.std(numpy.array([1, 2, 4, 5, 6])))
                         else:
-                            invertedIndex[barrelName][word] = [wordObjectInfo]
+                            invertedIndex[barrelName][word] = {articleData["metaData"]["id"] : hashingObject.rankingScore(articleData["words"][word]["freq"], len(articleData["words"]), numpy.std(numpy.array([1, 2, 4, 5, 6])))}
                     else:
-                        invertedIndex[barrelName] = {word: [wordObjectInfo]}
+                        invertedIndex[barrelName] = {}
                     if sys.getsizeof(invertedIndex[barrelName]) > 7000:
                         self.writeAndIfUpdateBarrel(invertedIndex[barrelName], barrelName)
                         invertedIndex[barrelName] = {}
@@ -208,6 +232,7 @@ class IndexGenerator:
         iIndex.generateInvertedIndex(fIndex.getNoFiles())
         os.system("cls")
         print(f'Processed {fIndex.noProcessedArticles()} articles in {round(time.time() - startTime, 2)} seconds')
+    
 
 def main():
     #  usage: python IndexGen.py <directory>
