@@ -1,7 +1,7 @@
 from flask import Flask, render_template, request
 from testersearchfunction import InvertedIndex
 from addnewfile import AddNewFile
-
+import os
 app = Flask(__name__)
 invertedIndex = InvertedIndex()
 add_new_file = AddNewFile()
@@ -33,6 +33,7 @@ def upload():
 
             # Call the addFileToForwardIndex function with the uploaded file
             add_new_file.addFileToForwardIndex(temp_path)
+            os.remove(temp_path)
 
     return render_template("upload.html")
 
