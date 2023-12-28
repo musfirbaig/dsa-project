@@ -36,7 +36,7 @@ class Hashing:
         return (sum)%500
     
     def rankingScore(self, freq, totalWords, posCoVar):
-        return round((10000*(freq/totalWords))/1 if posCoVar == 0 else posCoVar, 4)
+        return round((10000*(freq/totalWords))/(1 if posCoVar == 0 else posCoVar), 4)
     
 # class written to generate forward index 
 class ForwardIndex:
@@ -110,7 +110,7 @@ class ForwardIndex:
                     self.writeForwardIndexToFile(forwardIndex)
                     forwardIndex = []
                 self.__noOfArticles += 1
-        if len(forwardIndex):
+        if bool(forwardIndex):
             self.writeForwardIndexToFile(forwardIndex)
         os.system("cls")
         with open("metaDataURL.json", "w") as f:
@@ -170,16 +170,19 @@ class InvertedIndex:
         
         if os.path.exists(path):
             with open(path, mode="r") as alreadyBarrel:
-                temp = ujson.load(alreadyBarrel, object_pairs_hook=OrderedDict)
+                temp = ujson.load(alreadyBarrel)
         if len(temp) == 0:
             print("writing(): " + path)
         else:
             print("updating(): " + path)
-        withRank = {}
         with open(path, mode="w") as writeFile:
             for word in barrel:
-                barrel[word] = OrderedDict(sorted(barrel[word].items(), key=operator.itemgetter(1), reverse=True))
-            temp.update(barrel)
+                # barrel[word] = OrderedDict(sorted(barrel[word].items(), key=operator.itemgetter(1), reverse=True))
+                if word in temp:
+                    temp[word].update(barrel[word])
+                    temp[word] = OrderedDict(sorted(temp[word].items(), key=operator.itemgetter(1), reverse=True))
+                    continue
+                temp[word] = OrderedDict(sorted(barrel[word].items(), key=operator.itemgetter(1), reverse=True))
             ujson.dump(temp, writeFile)
         
                 
@@ -188,8 +191,6 @@ class InvertedIndex:
         SIDE EFFECTS: generates a inverted index for the
         forward index present in the directory
         """
-        if os.path.exists("Inverted_Index"):
-            shutil.rmtree("Inverted_Index")
         os.system("cls")
         print("generating inverted index....")
         os.makedirs("Inverted_Index", exist_ok=True)
