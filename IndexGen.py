@@ -26,7 +26,8 @@ STOP_WORDS_SET = set(['i', 'me', 'my', 'myself', 'we', 'our', 'ours', 'ourselves
 
 stemmer = SnowballStemmer("english")
 # this hashing function was written by me specifically for nela-gt-2022 dataset,
-# it sufficiently (uniformaly) distributes words in the search engine barrels 
+# it sufficiently (uniformaly) distributes words in the search engine barrels
+
 class Hashing:
 
     def HasherFunction(self, inputString):
@@ -37,7 +38,68 @@ class Hashing:
     
     def rankingScore(self, freq, totalWords, posCoVar):
         return round((10000*(freq/totalWords))/(1 if posCoVar == 0 else posCoVar), 4)
-    
+
+class Search:
+
+    def __init__(self, queueSize = 11):
+        self.queueSize = queueSize
+        self.queue = []
+        self.files = {}
+        self.hashing = Hashing()
+        with open("metaDataURL.json") as f:
+            self.meta = ujson.load(f)
+
+    def addFileToQueue(self, barrelNo):
+        with open (f"Inverted_Index/barrel{barrelNo}.json", "r") as f:
+            self.queue.append(barrelNo)
+            self.files[barrelNo] = ujson.load(f)
+        print(self.queue)
+
+        if (len(self.queue) > self.queueSize):
+            self.files.pop(self.queue[0])
+            self.queue.pop(0)
+
+        
+    def singleWordSearch(self, word):
+        time1 = time.time()
+        wordHash = self.hashing.HasherFunction(word)
+        if wordHash not in self.files:
+            self.addFileToQueue(wordHash)
+        if word not in self.files[wordHash].keys():
+            return []
+        results = [self.meta[result]["url"] for result in self.files[wordHash][word].keys()]
+        print((time.time()-time1)*1000)
+        return results
+        
+    def multiWordSearch(self, words):
+        time1 = time.time()
+        barrels = []
+        isNot = bool()
+        results = []
+        findTill = 0
+        for i, word in enumerate(words):
+            barrels.append(self.hashing.HasherFunction(word))
+            if barrels[i] not in self.files:
+                self.addFileToQueue(barrels[i])
+        while words[findTill] not in self.files[barrels[findTill]]:
+            findTill += 1
+        for doc in self.files[barrels[findTill]][words[findTill]].keys():
+            for i,  word in enumerate(words[findTill:]):
+                if doc not in self.files[barrels[findTill+i]][word].keys():
+                    isNot = True
+                    break
+            if not isNot:
+                results.append(doc)
+        return [self.meta[result]["url"] for result in results]
+
+            
+        
+        print((time.time()-time1)*1000)
+    def cleaningFunction(self, content):
+        words = content.lower().split(' ')
+        words = [stemmer.stem(word).encode("ascii", errors="ignore").decode().strip('\',._+/\\!@#$?^()[]}{"').strip() for word in words if word not in STOP_WORDS_SET]
+        words = [word for word in words if len(word) != 0]
+        return words
 # class written to generate forward index 
 class ForwardIndex:
 
@@ -84,7 +146,7 @@ class ForwardIndex:
         INPUT: A list of .json files in a directory
         OUTPUT: The Corresponding Forward Index
         """
-
+        self.__fileCounter = 0
         self.__noOfArticles = 0
         os.system("cls")
         print("generating forward index....")
@@ -257,14 +319,14 @@ class IndexGenerator:
     
 
 
-def main():
-    #  usage: python IndexGen.py <directory>
-    if (len(sys.argv) != 2):
-        print("Correct Usage: \"python IndexGen.py <directory>\"")
-        sys.exit()
-    directoryName = sys.argv[1]
-    indexGenerator = IndexGenerator()
-    indexGenerator.runGenerator(directoryName)
+# def main():
+#     #  usage: python IndexGen.py <directory>
+#     if (len(sys.argv) != 2):
+#         print("Correct Usage: \"python IndexGen.py <directory>\"")
+#         sys.exit()
+#     directoryName = sys.argv[1]
+#     indexGenerator = IndexGenerator()
+#     indexGenerator.runGenerator(directoryName)
     
 
-main()
+# main()

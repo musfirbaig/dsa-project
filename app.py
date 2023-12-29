@@ -2,22 +2,30 @@ from flask import Flask, render_template, request
 from testersearchfunction import InvertedIndex
 from addnewfile import AddNewFile
 import os
+import IndexGen
 app = Flask(__name__)
-invertedIndex = InvertedIndex()
-add_new_file = AddNewFile()
+
+generator = IndexGen.IndexGenerator()
+searcher = IndexGen.Search()
+
+
+queue = []
 
 @app.route("/", methods=["GET", "POST"])
 def index():
     if request.method == "POST":
         query_str = request.form["query"]
-        query_words = query_str.split()  # Split query into words
+        query_words = searcher.cleaningFunction(query_str)  # Split query into words
 
         if len(query_words) == 1:
             # Single-word query
-            results = invertedIndex.searchSingleWord(query_str)
+            results = searcher.singleWordSearch(query_words[0])
+
         else:
-            # Multi-word query
-            results = invertedIndex.searchMultiWord(query_str)
+            # Multi-word 
+            if (len(query_words) > 12):
+                query_words = query_words[:12]
+            results = searcher.multiWordSearch(query_words)
 
         return render_template("index.html", query=query_str, results=results)
     
@@ -32,7 +40,7 @@ def upload():
             uploaded_file.save(temp_path)
 
             # Call the addFileToForwardIndex function with the uploaded file
-            add_new_file.addFileToForwardIndex(temp_path)
+            generator.extendIndex(temp_path)
             os.remove(temp_path)
 
     return render_template("upload.html")
